@@ -1,9 +1,9 @@
-var createError = require('http-errors');
-var express = require('express');
+const createError = require('http-errors');
+const express = require('express');
 
-var fileUploadRouter = require('./api/export');
+const fileUploadRouter = require('./api/export');
 
-var app = express();
+const app = express();
 app.use('/', fileUploadRouter);
 
 // catch 404 and forward to error handler

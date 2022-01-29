@@ -1,15 +1,14 @@
-var fs = require('fs');
-var express = require('express');
-var svgexport = require('svgexport')
+const fs = require('fs');
+const express = require('express');
+const svgExport = require('svgexport');
 const fileUpload = require("express-fileupload")
-var router = express.Router();
-
-/* GET users listing. */
-// router.get('/', function(req, res, next) {
-//     res.send("hihi")
-// });
+const {route} = require("express/lib/router");
+const router = express.Router();
 
 router.use(fileUpload({useTempFiles: true}))
+router.get("/", (req, res, next)=>{
+    res.send("Welcome to app svg-png convert. please attached the svg file to field 'upload' with multipart/form-data. add header 'X-SCALE-TO' for other scale factor other then 3")
+})
 router.post("/", async function (req, res, next){
     console.log(req.header("content-type"))
     // console.log(req)
@@ -40,18 +39,18 @@ router.post("/", async function (req, res, next){
         await file.mv(fileSource)
 
         console.log(`${fileDest} ${scale}x`)
-        await svgexport.render({
+        await svgExport.render({
             input: fileSource,
             output: [`${fileDest} ${scale}x`],
         }, async ()=>{
             const fileStack = fileDest.replace("\\","/").split("/")
+            let deleteFile = (file)=>{fs.unlink(file, (err)=>err?console.log(err.toString()):console.warn(`${fs} deleted`))}
             await res.download(fileDest, fileStack[fileStack.length-1], (err)=>{
+                deleteFile(fileSource)
+                deleteFile(fileDest)
                 if(err){
                     console.log(err)
-                } else {
-                    let deleteFile = (file)=>{fs.unlink(file, (err)=>err?console.log(err.toString()):console.warn(`${fs} deleted`))}
-                    deleteFile(fileSource)
-                    deleteFile(fileDest)
+                    return res.status(500).send(`${err.toString()}`)
                 }
             })
         })
